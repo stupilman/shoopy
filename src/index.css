@@ -71,6 +71,7 @@
 
 @theme {
   --color-brand: #F96162;
+  --backgroundImage-banner: url('../public/images/banner.jpg')
 }
 
 body {
