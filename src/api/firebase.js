@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, child, get } from 'firebase/database';
+import { v4 as uuid } from 'uuid';
+import { getDatabase, ref, set, get } from 'firebase/database';
 import {
   getAuth,
   signInWithPopup,
@@ -41,11 +42,23 @@ function adminUser(user) {
   return get(ref(database, 'admins'))
     .then((snapshot) => {
       if (snapshot.exists()) {
-        const admins = snapshot.val()
+        const admins = snapshot.val();
         const isAdmin = admins.includes(user.uid);
         return { ...user, isAdmin };
       }
       return user;
     })
     .catch((error) => console.error(error));
+}
+
+export async function addNewProduct(product, image) {
+  const id = uuid();
+
+  return set(ref(database, `products/${id}`), {
+    ...product,
+    id,
+    price: parseInt(product.price),
+    image,
+    options: product.options.split(','),
+  });
 }
