@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import Button from '../components/ui/Button.jsx';
 import { uploadImage } from '../api/uploader.js';
-import { addNewProduct } from '../api/firebase.js';
+import useProducts from '../hooks/useProducts.jsx';
 
 function NewProduct() {
   const [product, setProduct] = useState({});
   const [file, setFile] = useState();
   const [isUploading, setIsUploading] = useState(false);
   const [success, setSuccess] = useState();
+
+const {addProduct} = useProducts()
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -19,18 +21,23 @@ function NewProduct() {
     console.log(name, value);
     setProduct((product) => ({ ...product, [name]: value }));
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsUploading(true);
     uploadImage(file)
       .then((url) => {
-        console.log(url);
-        addNewProduct(product, url).then(() => {
-          setSuccess('성공적으로 제품이 추가됐습니다.');
-          setTimeout(() => {
-            setSuccess(null);
-          }, 4000);
-        });
+        addProduct.mutate(
+          { product, url },
+          {
+            onSuccess: () => {
+              setSuccess('✅성공적으로 제품이 추가됐습니다.');
+              setTimeout(() => {
+                setSuccess(null);
+              }, 4000);
+            },
+          }
+        );
       })
       .finally(() => setIsUploading(false));
   };
@@ -44,10 +51,9 @@ function NewProduct() {
           className="w-96 mx-auto mb-2"
           src={URL.createObjectURL(file)}
           alt="local file"
-
         />
       )}
-      <form className='flex flex-col px-12' onSubmit={handleSubmit}>
+      <form className="flex flex-col px-12" onSubmit={handleSubmit}>
         <input
           type="file"
           accept="image/*"
